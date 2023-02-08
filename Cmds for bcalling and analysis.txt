@@ -1,0 +1,75 @@
+guppy_basecaller -i /mnt/data/Silverfiskgenome/ -s /mnt/data/Silverfiskbcrun2/  --flowcell FLO-MIN106 --kit SQK-LSK109 --min_qscore 7 -q 0 -r -x cuda:all:100% --calib_detect --num_callers 1000
+
+As using only 1000 cores of the GPU was slow, for the second run 3000 cores were used
+
+guppy_basecaller -i /mnt/data/Silverfiskgenome/ -s /mnt/data/Silverfiskbcrun2/  --flowcell FLO-MIN106 --kit SQK-LSK109 --min_qscore 7 -q 0 -r -x cuda:all:100% --calib_detect --num_callers 3000
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=4   #CPU to use
+#SBATCH --mem=1024mb        # MEM to use
+#SBATCH --time=01:00:00     #How long the code should run
+#SBATCH --account=UniKoeln  #My user
+
+#The following # signs are commands used on the Cologne computer cluster previous # are only an explanation of the commands
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=5gb
+#SBATCH --time=24:00:00   
+#SBATCH --account=aaargjag
+
+/home/sikongss/QC/FastQC/fastqc -o /home/aaargjag/fastqc/ -t 12 /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib1.R1.fastq.gz /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib2.R1.fastq.gz /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib1.R2.fastq.gz /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib2.R2.fastq.gz
+
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=22gb
+#SBATCH --time=24:00:00
+#SBATCH --account=aaargjag
+
+java -jar /home/sikongss/QC/Trimmomatic/Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads 8 /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib1.R1.fastq.gz /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib1.R2.fastq.gz -baseout lib1_t.fq.gz ILLUMINACLIP:/home/sikongss/QC/Trimmomatic/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10 SLIDINGWINDOW:4:20 MINLEN:100
+
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=22gb
+#SBATCH --time=24:00:00
+#SBATCH --account=aaargjag
+
+java -jar /home/sikongss/QC/Trimmomatic/Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads 8 /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib2.R1.fastq.gz /scratch/silverfish/210517_A00316_0235_AHC2WMDRXY/Data/Intensities/lib2.R2.fastq.gz -baseout lib2_t.fq.gz ILLUMINACLIP:/home/sikongss/QC/Trimmomatic/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10 SLIDINGWINDOW:4:20 MINLEN:100
+
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=5gb
+#SBATCH --time=24:00:00   
+#SBATCH --account=aaargjag
+
+/home/sikongss/QC/FastQC/fastqc -o /home/aaargjag/tfastqc/ -t 12
+/scratch/silverfish/lib1_t_1P.fq.gz /scratch/silverfish/lib1_t_2P.fq.gz /scratch/silverfish/lib2_t_1P.fq.gz /scratch/silverfish/lib2_t_2P.fq.gz
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=5gb
+#SBATCH --time=24:00:00   
+#SBATCH --account=aaargjag
+
+/home/sikongss/QC/FastQC/fastqc -o /home/aaargjag/tfastqc/ -t 12 /scratch/silverfish/lib1_t_1P.fq.gz /scratch/silverfish/lib1_t_2P.fq.gz /scratch/silverfish/lib2_t_1P.fq.gz /scratch/silverfish/lib2_t_2P.fq.gz
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=5gb
+#SBATCH --time=48:00:00
+#SBATCH --account=aaargjag
+
+cat /home/aaargjag/Silverfiskbc/Silverfiskbcrun1/*.fastq > ONTrun1.fastq
+
+#!/bin/bash -l
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=5gb
+#SBATCH --time=48:00:00
+#SBATCH --account=aaargjag
+
+cat /home/aaargjag/Silverfiskbc/Silverfiskbcrun2/*.fastq >ONTrun2.fastq
+
+Rscript MinIONQC.r -i /home/aaargjag/Silverfiskbc/
