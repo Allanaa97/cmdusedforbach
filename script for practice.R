@@ -1,7 +1,7 @@
 library(dada2)
 library(dada2);packageVersion("dada2")
 path <- "D:/Bachelor_ting/anni"
-list.files(path) #Brúka alla path frá harddiskiğ má brúka framskák
+list.files(path) #Use the whole path from the harddisk. Have to use forwards slash
 
 fnFs <- sort(list.files(path, pattern="_R1", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern="_R2", full.names = TRUE))
@@ -14,7 +14,7 @@ filtFs <- file.path(filt_path, paste0(sample.names, "_F_filt.fastq.gz"))
 filtRs <- file.path(filt_path, paste0(sample.names, "_R_filt.fastq.gz"))
 
 out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(300,200), maxEE=c(2,2), rm.phix=TRUE,
-                     compress=TRUE, multithread=FALSE) # On Windows set multithread=FALSE
+                     compress=TRUE, multithread=FALSE) # On Windows set multithread=FALSE, why though?
 head(out)
 
 errF <- learnErrors(filtFs, multithread=FALSE)
